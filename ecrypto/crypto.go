@@ -3,9 +3,14 @@ package ecrypto
 import (
 	"bytes"
 	"crypto/cipher"
+	"crypto/rand"
 	"crypto/sha256"
+	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/tjfoc/gmsm/sm2"
+	"github.com/tjfoc/gmsm/x509"
+	"github.com/wumansgy/goEncrypt/rsa"
 	"os"
 
 	"github.com/tjfoc/gmsm/sm4"
@@ -13,6 +18,44 @@ import (
 	"github.com/wumansgy/goEncrypt/des"
 )
 
+func RsaPublicKeyEncryptSymmetricKey(SymmetricKey []byte, publicPemKey string) (string, error) {
+
+	cipherSymmetricKey, err := rsa.RsaEncryptToBase64(SymmetricKey, publicPemKey)
+	if err != nil {
+		return "", err
+	}
+	return cipherSymmetricKey, nil
+}
+func RsaPrivateKeyDecryptSymmetricKey(cipherSymmetricKey string, privatePemKey string) ([]byte, error) {
+	plainSymmetricKey, err := rsa.RsaDecryptByBase64(cipherSymmetricKey, privatePemKey)
+	if err != nil {
+		return nil, err
+	}
+	return plainSymmetricKey, nil
+}
+func Sm2PublicKeyEncryptSymmetricKey(SymmetricKey []byte, PublicKey string) (string, error) {
+	fromPem, err := x509.ReadPublicKeyFromPem([]byte(PublicKey))
+	if err != nil {
+		return "", err
+	}
+	cryptoRes, err := sm2.Encrypt(fromPem, SymmetricKey, rand.Reader, 1)
+	if err != nil {
+		return "", err
+	}
+	toString := base64.StdEncoding.EncodeToString(cryptoRes)
+	return toString, nil
+}
+func Sm2PrivateDecryptSymmetricKey(cipherSymmetricKey string, privatePemKey string) ([]byte, error) {
+	pem, err := x509.ReadPrivateKeyFromPem([]byte(privatePemKey), []byte("12345678"))
+	if err != nil {
+		return nil, err
+	}
+	plainSymmetricKey, err := sm2.Decrypt(pem, []byte(cipherSymmetricKey), 1)
+	if err != nil {
+		return nil, err
+	}
+	return plainSymmetricKey, nil
+}
 func AesEncrypt(data []byte, AesKey []byte, AesIv []byte) ([]byte, error) {
 	if len(AesKey) != 16 {
 		return nil, errors.New("aes Key is illegal")
