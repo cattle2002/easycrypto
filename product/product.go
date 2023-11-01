@@ -55,9 +55,8 @@ func NewOriginalProductEncoder(algo string, OriginalSymmetricKey []byte, data []
 	}
 	return nil, errors.New("no algo")
 }
-func NewProductToFileServer(fileName string) error {
-	address := "159.75.239.144:21"
-	f, err := ftp.Dial(address, ftp.DialWithTimeout(time.Duration(10)*time.Second))
+func NewProductToFileServer(fileName string, addr string) error {
+	f, err := ftp.Dial(addr, ftp.DialWithTimeout(time.Duration(10)*time.Second))
 	if err != nil {
 		return err
 	}
