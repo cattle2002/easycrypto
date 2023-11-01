@@ -50,7 +50,11 @@ func Sm2PrivateDecryptSymmetricKey(cipherSymmetricKey string, privatePemKey stri
 	if err != nil {
 		return nil, err
 	}
-	plainSymmetricKey, err := sm2.Decrypt(pem, []byte(cipherSymmetricKey), 1)
+	decodeString, err := base64.StdEncoding.DecodeString(cipherSymmetricKey)
+	if err != nil {
+		return nil, err
+	}
+	plainSymmetricKey, err := sm2.Decrypt(pem, decodeString, 1)
 	if err != nil {
 		return nil, err
 	}
